@@ -1,0 +1,2681 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="VC Intelligence Tool — AI-powered investor due diligence and startup research platform. Generate comprehensive intelligence packets in minutes.">
+  <meta name="keywords" content="venture capital, due diligence, startup analysis, investment intelligence, VC research">
+  <meta name="author" content="VC Intelligence">
+  <meta name="robots" content="noindex, nofollow">
+  <title>VC Intelligence — Investor Research Platform</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+
+  <style>
+    /* ═══════════════════════════════════════════
+       DESIGN SYSTEM — CSS CUSTOM PROPERTIES
+    ═══════════════════════════════════════════ */
+    :root {
+      /* Dark theme (default) */
+      --bg: #111110;
+      --surface: #161514;
+      --surface-2: #1c1b19;
+      --surface-offset: #1d1c1a;
+      --surface-dynamic: #2d2c2a;
+      --divider: #262523;
+      --border: #393836;
+      --text: #cdccca;
+      --text-muted: #797876;
+      --text-faint: #5a5957;
+      --primary: #4f98a3;
+      --primary-hover: #227f8b;
+      --primary-highlight: #313b3b;
+      --error: #d163a7;
+      --success: #6daa45;
+      --warning: #bb653b;
+      --gold: #e8af34;
+      --blue: #5591c7;
+      --orange: #fdab43;
+
+      /* Typography */
+      --font-body: 'Geist', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'Geist Mono', 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
+
+      /* Spacing */
+      --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
+      --sp-5: 20px; --sp-6: 24px; --sp-7: 32px; --sp-8: 40px; --sp-9: 48px;
+
+      /* Radius */
+      --radius-sm: 6px; --radius-md: 8px; --radius-lg: 12px;
+      --radius-xl: 16px; --radius-full: 9999px;
+    }
+
+    [data-theme='light'] {
+      --bg: #f7f6f2;
+      --surface: #f9f8f5;
+      --surface-2: #f0efeb;
+      --surface-offset: #eae9e5;
+      --surface-dynamic: #e0dfdb;
+      --divider: #d4d1ca;
+      --border: #d4d1ca;
+      --text: #28251d;
+      --text-muted: #7a7974;
+      --text-faint: #9a9994;
+      --primary: #01696f;
+      --primary-hover: #0c4e54;
+      --primary-highlight: #d0e8e9;
+      --error: #c44d94;
+      --success: #5a9435;
+      --warning: #a8552d;
+      --gold: #c99520;
+      --blue: #3d7ab5;
+      --orange: #e09530;
+    }
+
+    /* ═══════════════════════════════════════════
+       RESET & BASE STYLES
+    ═══════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      font-size: 14px;
+      scroll-behavior: smooth;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: var(--font-body);
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text);
+      background: var(--bg);
+      min-height: 100vh;
+      transition: background-color 200ms ease, color 200ms ease;
+    }
+
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { color: var(--primary-hover); }
+
+    /* ═══════════════════════════════════════════
+       ANIMATIONS & KEYFRAMES
+    ═══════════════════════════════════════════ */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(79, 152, 163, 0.4); }
+      50% { box-shadow: 0 0 0 8px rgba(79, 152, 163, 0); }
+    }
+
+    @keyframes checkScale {
+      0% { transform: scale(0); }
+      60% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes glowPulse {
+      0%, 100% { box-shadow: 0 0 8px 2px currentColor; }
+      50% { box-shadow: 0 0 16px 4px currentColor; }
+    }
+
+    @keyframes fadeInRating {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes badgePulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    .screen {
+      display: none;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 200ms ease, transform 200ms ease;
+    }
+    .screen.active {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+      animation: fadeInUp 200ms ease forwards;
+    }
+
+    /* ═══════════════════════════════════════════
+       HEADER BAR
+    ═══════════════════════════════════════════ */
+    #app-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--sp-6);
+      background: var(--surface);
+      border-bottom: 1px solid var(--divider);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+    }
+
+    .header-logo {
+      width: 28px;
+      height: 28px;
+      flex-shrink: 0;
+    }
+
+    .header-brand {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.2;
+    }
+
+    .header-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+
+    .header-subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.01em;
+    }
+
+    #theme-toggle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 150ms ease, border-color 150ms ease;
+    }
+    #theme-toggle:hover {
+      background: var(--surface-offset);
+    }
+    #theme-toggle svg { width: 18px; height: 18px; }
+
+    .icon-sun, .icon-moon { transition: opacity 150ms ease; }
+    [data-theme='dark'] .icon-sun { display: none; }
+    [data-theme='light'] .icon-moon { display: none; }
+
+    /* ═══════════════════════════════════════════
+       SCREEN 1 — INPUT FORM
+    ═══════════════════════════════════════════ */
+    .form-container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: var(--sp-9) var(--sp-6);
+    }
+
+    .form-page-title {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      margin-bottom: var(--sp-2);
+    }
+
+    .form-page-subtitle {
+      color: var(--text-muted);
+      font-size: 15px;
+      margin-bottom: var(--sp-8);
+      max-width: 560px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--sp-4);
+    }
+
+    .form-group { display: flex; flex-direction: column; }
+    .form-group.full-width { grid-column: 1 / -1; }
+
+    .form-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .form-label .required { color: var(--error); margin-left: 2px; }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 14px;
+      line-height: 1.5;
+      transition: border-color 150ms ease, outline-color 150ms ease;
+      width: 100%;
+    }
+
+    .form-input::placeholder,
+    .form-textarea::placeholder {
+      color: var(--text-faint);
+    }
+
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+      border-color: var(--primary);
+    }
+
+    .form-select {
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23797876' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 38px;
+      cursor: pointer;
+    }
+
+    .form-textarea { resize: vertical; }
+
+    .form-input.error,
+    .form-textarea.error {
+      border-color: var(--error);
+    }
+
+    .form-error-msg {
+      color: var(--error);
+      font-size: 12px;
+      margin-top: 4px;
+      display: none;
+    }
+    .form-error-msg.visible { display: block; }
+
+    .form-cta {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      margin-top: var(--sp-4);
+    }
+
+    .btn-primary {
+      height: 48px;
+      padding: 0 32px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 150ms ease, transform 150ms ease;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--sp-2);
+    }
+    .btn-primary:hover { background: var(--primary-hover); transform: scale(0.97); }
+    .btn-primary:active { transform: scale(0.95); }
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .form-cta-meta {
+      font-size: 12px;
+      color: var(--text-faint);
+      margin-top: var(--sp-2);
+    }
+
+    /* Honeypot */
+    .hp-field {
+      position: absolute;
+      left: -9999px;
+      top: -9999px;
+      opacity: 0;
+      height: 0;
+      width: 0;
+    }
+
+    /* ═══════════════════════════════════════════
+       SCREEN 2 — RESEARCH IN PROGRESS
+    ═══════════════════════════════════════════ */
+    .progress-container {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: var(--sp-9) var(--sp-6);
+    }
+
+    .progress-heading {
+      font-size: 20px;
+      color: var(--text-muted);
+      font-style: italic;
+      margin-bottom: var(--sp-7);
+    }
+
+    .phase-stepper {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin-bottom: var(--sp-7);
+    }
+
+    .phase-row {
+      display: flex;
+      align-items: center;
+      height: 52px;
+      position: relative;
+      gap: var(--sp-4);
+    }
+
+    .phase-circle-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      width: 24px;
+      flex-shrink: 0;
+    }
+
+    .phase-circle {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 300ms ease, border-color 300ms ease, box-shadow 300ms ease;
+      position: relative;
+      z-index: 2;
+    }
+
+    .phase-circle.pending {
+      background: transparent;
+      border: 2px solid var(--text-faint);
+    }
+
+    .phase-circle.running {
+      background: var(--primary);
+      border: 2px solid var(--primary);
+      animation: pulse 2s infinite;
+    }
+
+    .phase-circle.done {
+      background: var(--success);
+      border: 2px solid var(--success);
+      animation: checkScale 300ms ease forwards;
+    }
+
+    .phase-circle.error {
+      background: var(--error);
+      border: 2px solid var(--error);
+    }
+
+    .phase-circle svg {
+      width: 12px;
+      height: 12px;
+      color: #fff;
+    }
+
+    .phase-connector {
+      position: absolute;
+      top: 38px;
+      left: 11px;
+      width: 2px;
+      height: 52px;
+      background: var(--divider);
+      z-index: 1;
+      transition: background 300ms ease;
+    }
+    .phase-connector.done { background: var(--success); }
+
+    .phase-row:last-child .phase-connector { display: none; }
+
+    .phase-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .phase-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .phase-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .phase-badge {
+      flex-shrink: 0;
+      font-size: 11px;
+      padding: 4px 12px;
+      border-radius: var(--radius-full);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .phase-badge.pending {
+      color: var(--text-faint);
+      background: var(--surface-offset);
+    }
+    .phase-badge.running {
+      color: var(--primary);
+      background: var(--primary-highlight);
+      animation: badgePulse 2s infinite;
+    }
+    .phase-badge.done {
+      color: var(--success);
+      background: rgba(109, 170, 69, 0.12);
+    }
+    .phase-badge.error {
+      color: var(--error);
+      background: rgba(209, 99, 167, 0.12);
+    }
+
+    /* Live preview box */
+    .live-preview {
+      background: var(--surface-2);
+      border-radius: var(--radius-lg);
+      height: 220px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      margin-bottom: var(--sp-4);
+    }
+
+    .live-preview-header {
+      font-size: 12px;
+      color: var(--text-muted);
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--divider);
+      flex-shrink: 0;
+    }
+
+    .live-preview-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text);
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.5;
+    }
+
+    .live-preview-content::-webkit-scrollbar { width: 6px; }
+    .live-preview-content::-webkit-scrollbar-track { background: transparent; }
+    .live-preview-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* Progress bar */
+    .progress-bar-track {
+      height: 4px;
+      background: var(--surface-offset);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      margin-bottom: var(--sp-6);
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: var(--radius-full);
+      width: 0%;
+      transition: width 600ms ease;
+    }
+
+    .progress-footer {
+      font-size: 13px;
+      color: var(--text-faint);
+      text-align: center;
+    }
+
+    .progress-warning {
+      font-size: 13px;
+      color: var(--warning);
+      text-align: center;
+      margin-top: var(--sp-3);
+      display: none;
+    }
+
+    /* ═══════════════════════════════════════════
+       SCREEN 3 — RESULTS & DOWNLOAD
+    ═══════════════════════════════════════════ */
+    .results-container {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: var(--sp-9) var(--sp-6);
+    }
+
+    .success-banner {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--sp-4);
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      border: 1px solid var(--divider);
+      margin-bottom: var(--sp-6);
+    }
+
+    .success-check-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--success);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .success-check-circle svg { width: 16px; height: 16px; color: #fff; }
+
+    .success-info {}
+    .success-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .success-meta {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* Sticky action bar */
+    .action-bar {
+      position: sticky;
+      top: 56px;
+      z-index: 50;
+      background: var(--surface);
+      border-bottom: 1px solid var(--divider);
+      padding: 12px 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--sp-3);
+      align-items: center;
+    }
+
+    .btn-action {
+      height: 40px;
+      padding: 0 20px;
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--sp-2);
+      transition: background 150ms ease, transform 150ms ease, border-color 150ms ease;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--text);
+    }
+    .btn-action:hover { background: var(--surface-offset); transform: scale(0.97); }
+    .btn-action:active { transform: scale(0.95); }
+
+    .btn-action.primary-action {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .btn-action.primary-action:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+
+    .btn-action .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid transparent;
+      border-top-color: currentColor;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      display: none;
+    }
+
+    .btn-action.loading .spinner { display: inline-block; }
+    .btn-action.loading .btn-label { display: none; }
+    .btn-action.loading .btn-loading-label { display: inline; }
+    .btn-action .btn-loading-label { display: none; }
+    .btn-action.success { border-color: var(--success); color: var(--success); }
+    .btn-action.success .btn-label { display: none; }
+    .btn-action.success .btn-success-label { display: inline; }
+    .btn-action .btn-success-label { display: none; }
+
+    /* Tabs */
+    .tab-bar {
+      display: flex;
+      border-bottom: 1px solid var(--divider);
+      margin-top: var(--sp-4);
+      gap: 0;
+      overflow-x: auto;
+    }
+
+    .tab-item {
+      padding: 12px 20px;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+      transition: color 150ms ease, background 150ms ease, border-color 150ms ease;
+      user-select: none;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+      font-family: var(--font-body);
+    }
+    .tab-item:hover { background: var(--surface-offset); color: var(--text); }
+    .tab-item.active {
+      border-bottom-color: var(--primary);
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* Tab content */
+    .tab-content-area {
+      background: var(--surface);
+      padding: 32px;
+      border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+      border: 1px solid var(--divider);
+      border-top: none;
+      min-height: 300px;
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ═══════════════════════════════════════════
+       MARKDOWN RENDERED CONTENT
+    ═══════════════════════════════════════════ */
+    .md-content h1,
+    .md-content h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 28px 0 12px 0;
+      padding-left: 16px;
+      border-left: 3px solid var(--primary);
+      letter-spacing: -0.02em;
+    }
+
+    .md-content h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 24px 0 8px 0;
+    }
+
+    .md-content h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin: 20px 0 6px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .md-content p {
+      margin: 8px 0;
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    .md-content strong { color: var(--text); font-weight: 600; }
+    .md-content em { font-style: italic; }
+
+    .md-content ul, .md-content ol {
+      margin: 8px 0;
+      padding-left: 24px;
+    }
+    .md-content li { margin: 8px 0; line-height: 1.6; }
+
+    .md-content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 13px;
+    }
+    .md-content table thead {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    .md-content table thead th {
+      background: var(--surface-offset);
+      font-weight: 600;
+      text-align: left;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      color: var(--text);
+      white-space: nowrap;
+    }
+    .md-content table tbody td {
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      color: var(--text);
+      vertical-align: top;
+    }
+    .md-content table tbody tr:nth-child(even) td {
+      background: var(--surface-2);
+    }
+
+    .md-content code {
+      font-family: var(--font-mono);
+      background: var(--surface-2);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+
+    .md-content pre {
+      background: var(--surface-2);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      overflow-x: auto;
+      margin: 16px 0;
+    }
+    .md-content pre code {
+      background: none;
+      padding: 0;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .md-content hr {
+      border: none;
+      border-top: 1px solid var(--divider);
+      margin: 24px 0;
+    }
+
+    .md-content blockquote {
+      border-left: 3px solid var(--border);
+      padding: 8px 16px;
+      margin: 12px 0;
+      color: var(--text-muted);
+      background: var(--surface-2);
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    }
+
+    /* Signal badges */
+    .signal-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 10px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.6;
+    }
+    .signal-badge.signal-green { background: rgba(109,170,69,0.15); color: var(--success); }
+    .signal-badge.signal-amber { background: rgba(187,101,59,0.15); color: var(--warning); }
+    .signal-badge.signal-red { background: rgba(209,99,167,0.15); color: var(--error); }
+    .signal-badge.signal-blue { background: rgba(85,145,199,0.15); color: var(--blue); }
+
+    /* Severity cards */
+    .severity-card {
+      padding: 16px;
+      border-radius: var(--radius-md);
+      margin: 12px 0;
+    }
+    .severity-card.critical {
+      border-left: 4px solid var(--error);
+      background: rgba(209,99,167,0.08);
+    }
+    .severity-card.high {
+      border-left: 4px solid var(--orange);
+      background: rgba(253,171,67,0.08);
+    }
+    .severity-card.medium {
+      border-left: 4px solid var(--gold);
+      background: rgba(232,175,52,0.08);
+    }
+
+    /* Investment signal glow */
+    .signal-glow-go { color: var(--success); animation: glowPulse 2s infinite; display: inline-block; }
+    .signal-glow-hold { color: var(--gold); animation: glowPulse 2s infinite; display: inline-block; }
+    .signal-glow-pass { color: var(--error); animation: glowPulse 2s infinite; display: inline-block; }
+
+    /* ═══════════════════════════════════════════
+       RATING WIDGET
+    ═══════════════════════════════════════════ */
+    .rating-widget {
+      background: var(--surface);
+      border: 1px solid var(--divider);
+      border-radius: var(--radius-xl);
+      padding: 32px;
+      max-width: 400px;
+      margin: 40px auto 0;
+      text-align: center;
+      animation: fadeInRating 400ms ease forwards;
+      display: none;
+    }
+    .rating-widget.visible { display: block; }
+
+    .rating-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: var(--sp-4);
+    }
+
+    .rating-stars {
+      display: flex;
+      justify-content: center;
+      gap: var(--sp-2);
+      margin-bottom: var(--sp-5);
+    }
+
+    .rating-star {
+      width: 28px;
+      height: 28px;
+      cursor: pointer;
+      color: var(--text-faint);
+      transition: color 150ms ease, transform 150ms ease;
+      background: none;
+      border: none;
+      padding: 0;
+    }
+    .rating-star:hover { transform: scale(1.1); }
+    .rating-star.filled { color: var(--gold); }
+    .rating-star svg { width: 28px; height: 28px; fill: currentColor; }
+
+    .rating-feedback-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-align: left;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .rating-textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 13px;
+      resize: vertical;
+      margin-bottom: var(--sp-4);
+    }
+    .rating-textarea:focus {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
+    .rating-submit {
+      height: 40px;
+      padding: 0 24px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 150ms ease, opacity 150ms ease;
+      width: 100%;
+    }
+    .rating-submit:hover { background: var(--primary-hover); }
+    .rating-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .rating-thanks {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: var(--sp-4);
+      display: none;
+    }
+
+    /* ═══════════════════════════════════════════
+       TOAST NOTIFICATIONS
+    ═══════════════════════════════════════════ */
+    .toast-container {
+      position: fixed;
+      top: 68px;
+      right: 24px;
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-3);
+    }
+
+    .toast {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px 20px;
+      font-size: 14px;
+      color: var(--text);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      animation: fadeInUp 200ms ease;
+      max-width: 380px;
+      display: flex;
+      align-items: flex-start;
+      gap: var(--sp-3);
+    }
+    .toast.error { border-left: 3px solid var(--error); }
+    .toast.warning { border-left: 3px solid var(--warning); }
+    .toast.success { border-left: 3px solid var(--success); }
+    .toast.fade-out { animation: fadeOut 300ms ease forwards; }
+
+    .toast-icon { flex-shrink: 0; font-size: 16px; }
+    .toast-body { flex: 1; }
+    .toast-title { font-weight: 600; margin-bottom: 2px; }
+    .toast-msg { color: var(--text-muted); font-size: 13px; }
+
+    /* ═══════════════════════════════════════════
+       ERROR SCREEN OVERLAY
+    ═══════════════════════════════════════════ */
+    .error-overlay {
+      text-align: center;
+      padding: var(--sp-8);
+    }
+
+    .error-overlay h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: var(--sp-3);
+      color: var(--text);
+    }
+
+    .error-overlay p {
+      color: var(--text-muted);
+      margin-bottom: var(--sp-6);
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .btn-retry {
+      height: 44px;
+      padding: 0 28px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 150ms ease, transform 150ms ease;
+      margin: 0 var(--sp-2);
+    }
+    .btn-retry:hover { background: var(--primary-hover); transform: scale(0.97); }
+
+    .btn-secondary-retry {
+      height: 44px;
+      padding: 0 28px;
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 150ms ease, transform 150ms ease;
+      margin: 0 var(--sp-2);
+    }
+    .btn-secondary-retry:hover { background: var(--surface-offset); transform: scale(0.97); }
+
+    /* ═══════════════════════════════════════════
+       PDF RENDER ZONE (hidden)
+    ═══════════════════════════════════════════ */
+    #pdf-render-zone {
+      position: fixed;
+      left: -9999px;
+      top: 0;
+      width: 794px;
+      background: #ffffff;
+      color: #1a1a1a;
+      font-family: 'Geist', system-ui, sans-serif;
+      font-size: 12px;
+      line-height: 1.5;
+      padding: 0;
+    }
+
+    #pdf-render-zone .pdf-page {
+      padding: 48px 56px;
+      page-break-after: always;
+    }
+
+    #pdf-render-zone .pdf-stamp {
+      text-align: right;
+      color: #d32f2f;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 32px;
+    }
+
+    #pdf-render-zone .pdf-company-name {
+      font-size: 36px;
+      font-weight: 700;
+      color: #111;
+      margin-bottom: 4px;
+    }
+
+    #pdf-render-zone .pdf-subtitle {
+      font-size: 18px;
+      color: #666;
+      margin-bottom: 24px;
+    }
+
+    #pdf-render-zone hr {
+      border: none;
+      border-top: 2px solid #e0e0e0;
+      margin: 20px 0;
+    }
+
+    #pdf-render-zone .pdf-meta-table {
+      width: 100%;
+      font-size: 13px;
+      margin-bottom: 32px;
+    }
+    #pdf-render-zone .pdf-meta-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #eee;
+    }
+    #pdf-render-zone .pdf-meta-table td:first-child {
+      font-weight: 600;
+      color: #444;
+      width: 180px;
+    }
+
+    #pdf-render-zone .pdf-toc h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #333;
+    }
+    #pdf-render-zone .pdf-toc ol {
+      padding-left: 20px;
+      font-size: 14px;
+      color: #555;
+    }
+    #pdf-render-zone .pdf-toc li { margin: 6px 0; }
+
+    #pdf-render-zone .pdf-footer {
+      margin-top: 48px;
+      font-size: 11px;
+      color: #999;
+      text-align: center;
+      border-top: 1px solid #eee;
+      padding-top: 12px;
+    }
+
+    #pdf-render-zone .pdf-phase-header {
+      padding: 10px 20px;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      margin: 32px 0 16px 0;
+      border-radius: 4px;
+    }
+    #pdf-render-zone .pdf-phase-header.phase-1 { background: #5591c7; }
+    #pdf-render-zone .pdf-phase-header.phase-2 { background: #d163a7; }
+    #pdf-render-zone .pdf-phase-header.phase-3 { background: #6daa45; }
+    #pdf-render-zone .pdf-phase-header.phase-4 { background: #e8af34; }
+
+    #pdf-render-zone .pdf-content {
+      font-size: 12px;
+      line-height: 1.6;
+      color: #222;
+    }
+    #pdf-render-zone .pdf-content h1,
+    #pdf-render-zone .pdf-content h2 {
+      font-size: 16px;
+      font-weight: 700;
+      margin: 20px 0 8px 0;
+      color: #222;
+      border-left: 3px solid #4f98a3;
+      padding-left: 12px;
+    }
+    #pdf-render-zone .pdf-content h3 {
+      font-size: 14px;
+      font-weight: 600;
+      margin: 16px 0 6px 0;
+      color: #333;
+    }
+    #pdf-render-zone .pdf-content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 10px;
+    }
+    #pdf-render-zone .pdf-content table th {
+      background: #f5f5f5;
+      font-weight: 600;
+      text-align: left;
+      padding: 8px 10px;
+      border: 1px solid #ddd;
+    }
+    #pdf-render-zone .pdf-content table td {
+      padding: 8px 10px;
+      border: 1px solid #ddd;
+      vertical-align: top;
+    }
+    #pdf-render-zone .pdf-content table tr:nth-child(even) td {
+      background: #fafafa;
+    }
+    #pdf-render-zone .pdf-content ul, 
+    #pdf-render-zone .pdf-content ol {
+      padding-left: 20px;
+      margin: 8px 0;
+    }
+    #pdf-render-zone .pdf-content li { margin: 4px 0; }
+    #pdf-render-zone .pdf-content code {
+      background: #f0f0f0;
+      padding: 1px 4px;
+      border-radius: 3px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+    }
+    #pdf-render-zone .pdf-content pre {
+      background: #f5f5f5;
+      padding: 12px;
+      border-radius: 4px;
+      overflow-x: auto;
+      margin: 12px 0;
+    }
+    #pdf-render-zone .pdf-content pre code {
+      background: none;
+      padding: 0;
+    }
+
+    /* ═══════════════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════════════ */
+    @media (max-width: 768px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      .form-group.full-width {
+        grid-column: 1;
+      }
+      .form-cta {
+        align-items: stretch;
+      }
+      .btn-primary {
+        width: 100%;
+        justify-content: center;
+      }
+      .form-container,
+      .progress-container,
+      .results-container {
+        padding: var(--sp-7) var(--sp-4);
+      }
+      .tab-content-area {
+        padding: 20px 16px;
+      }
+      .action-bar {
+        flex-wrap: wrap;
+      }
+      .btn-action {
+        flex: 1;
+        min-width: 0;
+        justify-content: center;
+        font-size: 13px;
+        padding: 0 12px;
+      }
+      .success-banner {
+        flex-direction: column;
+        gap: var(--sp-3);
+      }
+      .tab-item {
+        padding: 10px 14px;
+        font-size: 13px;
+      }
+    }
+
+    /* Scrollbar global */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
+  </style>
+</head>
+<body>
+  <!-- ═══════════════════════════════════════════
+       HEADER
+  ═══════════════════════════════════════════ -->
+  <header id="app-header">
+    <div class="header-left">
+      <svg class="header-logo" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="2" width="10" height="10" rx="2" fill="var(--primary)"/>
+        <rect x="16" y="2" width="10" height="10" rx="2" fill="var(--primary)" opacity="0.7"/>
+        <rect x="2" y="16" width="10" height="10" rx="2" fill="var(--primary)" opacity="0.7"/>
+        <rect x="16" y="16" width="10" height="10" rx="2" fill="var(--primary)" opacity="0.4"/>
+      </svg>
+      <div class="header-brand">
+        <span class="header-title">VC Intelligence</span>
+        <span class="header-subtitle">Powered by Claude Opus</span>
+      </div>
+    </div>
+    <button id="theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </svg>
+    </button>
+  </header>
+
+  <!-- ═══════════════════════════════════════════
+       SCREEN 1 — INPUT FORM
+  ═══════════════════════════════════════════ -->
+  <main id="screen-input" class="screen active">
+    <div class="form-container">
+      <h1 class="form-page-title">New Research</h1>
+      <p class="form-page-subtitle">Drop in a startup website or deck. Get a full investor intelligence packet in minutes.</p>
+
+      <form id="research-form" class="form-grid" autocomplete="off">
+        <!-- Row 1 -->
+        <div class="form-group">
+          <label class="form-label" for="input-startup">Startup Name <span class="required">*</span></label>
+          <input class="form-input" type="text" id="input-startup" name="startup" required placeholder="e.g. Anthropic, Scale AI, Mistral…">
+          <span class="form-error-msg" id="error-startup">Startup name is required.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="input-vertical">Vertical / Sector</label>
+          <input class="form-input" type="text" id="input-vertical" name="vertical" placeholder="e.g. AI Infrastructure, HealthTech, Digital Pathology…">
+        </div>
+
+        <!-- Row 2 -->
+        <div class="form-group">
+          <label class="form-label" for="input-stage">Your Investment Stage</label>
+          <select class="form-select" id="input-stage" name="stage">
+            <option value="Pre-Seed">Pre-Seed</option>
+            <option value="Seed">Seed</option>
+            <option value="Series A" selected>Series A</option>
+            <option value="Series B">Series B</option>
+            <option value="Series C+">Series C+</option>
+            <option value="Growth">Growth</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="input-check-size">Check Size (USD)</label>
+          <input class="form-input" type="text" id="input-check-size" name="checkSize" placeholder="e.g. $500K–$2M">
+        </div>
+
+        <!-- Row 3 -->
+        <div class="form-group">
+          <label class="form-label" for="input-thesis">Your Fund Thesis / Focus</label>
+          <input class="form-input" type="text" id="input-thesis" name="thesis" placeholder="e.g. Deep tech, B2B SaaS, AI-native…">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="input-call-time">Call Time Remaining</label>
+          <select class="form-select" id="input-call-time" name="callTime">
+            <option value="30 min">30 min</option>
+            <option value="45 min">45 min</option>
+            <option value="1 hour" selected>1 hour</option>
+            <option value="90 min">90 min</option>
+          </select>
+        </div>
+
+        <!-- Row 4 (full width) -->
+        <div class="form-group full-width">
+          <label class="form-label" for="input-materials">Startup Website / Pitch Deck / Company Info</label>
+          <textarea class="form-textarea" id="input-materials" name="materials" rows="5" placeholder="Paste the startup website URL, pitch deck text, Crunchbase link, one-pager, or any available materials. Leave blank for cold-start web research."></textarea>
+        </div>
+
+        <!-- Row 5 (full width) -->
+        <div class="form-group full-width">
+          <label class="form-label" for="input-flags">Specific Concerns / Red Flags You've Noticed</label>
+          <textarea class="form-textarea" id="input-flags" name="flags" rows="3" placeholder="Optional: early suspicions, unusual claims, or areas to investigate specifically."></textarea>
+        </div>
+
+        <!-- Honeypot -->
+        <input type="text" name="website_confirm" id="input-honeypot" tabindex="-1" autocomplete="off" class="hp-field">
+
+        <!-- CTA -->
+        <div class="form-cta">
+          <button type="submit" class="btn-primary" id="btn-run-analysis">
+            Run Analysis
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+          </button>
+          <span class="form-cta-meta">4 research phases · 3–5 min · Generates PDF packet</span>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <!-- ═══════════════════════════════════════════
+       SCREEN 2 — RESEARCH IN PROGRESS
+  ═══════════════════════════════════════════ -->
+  <main id="screen-progress" class="screen">
+    <div class="progress-container">
+      <p class="progress-heading" id="progress-heading">Researching…</p>
+
+      <div class="phase-stepper" id="phase-stepper">
+        <!-- Phase 1 -->
+        <div class="phase-row" data-phase="1">
+          <div class="phase-circle-col">
+            <div class="phase-circle pending" id="phase-circle-1"></div>
+            <div class="phase-connector" id="phase-connector-1"></div>
+          </div>
+          <div class="phase-content">
+            <div class="phase-name">Brief Preparation</div>
+            <div class="phase-desc">Vertical map, team, talking points</div>
+          </div>
+          <span class="phase-badge pending" id="phase-badge-1">Pending</span>
+        </div>
+        <!-- Phase 2 -->
+        <div class="phase-row" data-phase="2">
+          <div class="phase-circle-col">
+            <div class="phase-circle pending" id="phase-circle-2"></div>
+            <div class="phase-connector" id="phase-connector-2"></div>
+          </div>
+          <div class="phase-content">
+            <div class="phase-name">Red Team Due Diligence</div>
+            <div class="phase-desc">Adversarial claim analysis</div>
+          </div>
+          <span class="phase-badge pending" id="phase-badge-2">Pending</span>
+        </div>
+        <!-- Phase 3 -->
+        <div class="phase-row" data-phase="3">
+          <div class="phase-circle-col">
+            <div class="phase-circle pending" id="phase-circle-3"></div>
+            <div class="phase-connector" id="phase-connector-3"></div>
+          </div>
+          <div class="phase-content">
+            <div class="phase-name">Independent Verification</div>
+            <div class="phase-desc">Open-source evidence test</div>
+          </div>
+          <span class="phase-badge pending" id="phase-badge-3">Pending</span>
+        </div>
+        <!-- Phase 4 -->
+        <div class="phase-row" data-phase="4">
+          <div class="phase-circle-col">
+            <div class="phase-circle pending" id="phase-circle-4"></div>
+            <div class="phase-connector" id="phase-connector-4"></div>
+          </div>
+          <div class="phase-content">
+            <div class="phase-name">Final Packet</div>
+            <div class="phase-desc">Investment signal + call questions</div>
+          </div>
+          <span class="phase-badge pending" id="phase-badge-4">Pending</span>
+        </div>
+      </div>
+
+      <!-- Live streaming preview -->
+      <div class="live-preview">
+        <div class="live-preview-header" id="live-preview-header">Live output — Phase 1</div>
+        <div class="live-preview-content" id="live-preview-content"></div>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" id="progress-bar-fill"></div>
+      </div>
+
+      <p class="progress-footer" id="progress-footer">Do not close this tab · Research in progress…</p>
+      <p class="progress-warning" id="progress-warning">This phase is taking longer than usual. Still working…</p>
+
+      <!-- Error overlay (hidden by default) -->
+      <div class="error-overlay" id="progress-error" style="display:none;">
+        <h3 id="error-title">Research Error</h3>
+        <p id="error-message">Something went wrong during the research process.</p>
+        <button class="btn-retry" id="btn-retry-phase">Retry from Phase <span id="retry-phase-num">1</span></button>
+        <button class="btn-secondary-retry" id="btn-start-over">Start Over</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- ═══════════════════════════════════════════
+       SCREEN 3 — RESULTS & DOWNLOAD
+  ═══════════════════════════════════════════ -->
+  <main id="screen-results" class="screen">
+    <div class="results-container">
+      <!-- Success banner -->
+      <div class="success-banner">
+        <div class="success-check-circle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+        <div class="success-info">
+          <div class="success-title" id="success-title">Research Complete — </div>
+          <div class="success-meta" id="success-meta"></div>
+        </div>
+      </div>
+
+      <!-- Sticky action bar -->
+      <div class="action-bar" id="action-bar">
+        <button class="btn-action" id="btn-download-pdf" title="Download PDF Packet">
+          <span class="spinner"></span>
+          <svg class="btn-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8M4 8l4 4 4-4"/><path d="M2 13h12"/></svg>
+          <span class="btn-label">Download PDF Packet</span>
+          <span class="btn-loading-label">Generating PDF…</span>
+          <span class="btn-success-label">Downloaded ✓</span>
+        </button>
+        <button class="btn-action" id="btn-download-md" title="Download Markdown">
+          <svg class="btn-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8M4 8l4 4 4-4"/><path d="M2 13h12"/></svg>
+          <span class="btn-label">Download .MD</span>
+          <span class="btn-success-label">Downloaded ✓</span>
+        </button>
+        <button class="btn-action primary-action" id="btn-new-research" title="Start new research">
+          <span>+ New Research</span>
+        </button>
+      </div>
+
+      <!-- Tab bar -->
+      <div class="tab-bar" id="tab-bar">
+        <button class="tab-item active" data-tab="tab-brief" id="tab-btn-brief">📋 Brief</button>
+        <button class="tab-item" data-tab="tab-redteam" id="tab-btn-redteam">🔴 Red Team DD</button>
+        <button class="tab-item" data-tab="tab-verification" id="tab-btn-verification">🔍 Verification</button>
+        <button class="tab-item" data-tab="tab-packet" id="tab-btn-packet">📦 Full Packet</button>
+      </div>
+
+      <!-- Tab content -->
+      <div class="tab-content-area">
+        <div class="tab-panel active md-content" id="tab-brief"></div>
+        <div class="tab-panel md-content" id="tab-redteam"></div>
+        <div class="tab-panel md-content" id="tab-verification"></div>
+        <div class="tab-panel md-content" id="tab-packet"></div>
+      </div>
+
+      <!-- Rating widget -->
+      <div class="rating-widget" id="rating-widget">
+        <div class="rating-title">How useful was this research packet?</div>
+        <div class="rating-stars" id="rating-stars">
+          <button class="rating-star" data-star="1" aria-label="1 star">
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </button>
+          <button class="rating-star" data-star="2" aria-label="2 stars">
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </button>
+          <button class="rating-star" data-star="3" aria-label="3 stars">
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </button>
+          <button class="rating-star" data-star="4" aria-label="4 stars">
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </button>
+          <button class="rating-star" data-star="5" aria-label="5 stars">
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </button>
+        </div>
+        <label class="rating-feedback-label" for="rating-comment">What could be improved?</label>
+        <textarea class="rating-textarea" id="rating-comment" rows="2" placeholder="Any feedback…"></textarea>
+        <button class="rating-submit" id="rating-submit" disabled>Submit Feedback</button>
+        <div class="rating-thanks" id="rating-thanks">Thanks — your feedback helps improve the tool.</div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Toast container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- PDF Render Zone -->
+  <div id="pdf-render-zone"></div>
+
+  <!-- ═══════════════════════════════════════════
+       JAVASCRIPT
+  ═══════════════════════════════════════════ -->
+  <script>
+    (() => {
+      'use strict';
+
+      /* ═══════════════════════════════════════
+         STATE
+      ═══════════════════════════════════════ */
+      const state = {
+        currentScreen: 'screen-input',
+        currentPhase: 0,
+        phaseOutputs: ['', '', '', ''],
+        phasesCompleted: [false, false, false, false],
+        phaseErrors: [false, false, false, false],
+        config: null,
+        companyName: '',
+        resultArrivalTime: null,
+        hasDownloaded: false,
+        ratingShown: false,
+        selectedStars: 0,
+        abortController: null,
+      };
+
+      /* ═══════════════════════════════════════
+         DOM REFS
+      ═══════════════════════════════════════ */
+      const $ = (sel) => document.querySelector(sel);
+      const $$ = (sel) => document.querySelectorAll(sel);
+
+      const screens = {
+        input: $('#screen-input'),
+        progress: $('#screen-progress'),
+        results: $('#screen-results'),
+      };
+
+      /* ═══════════════════════════════════════
+         THEME
+      ═══════════════════════════════════════ */
+      const themeToggle = $('#theme-toggle');
+      const savedTheme = localStorage.getItem('vc-intel-theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+
+      themeToggle.addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('vc-intel-theme', next);
+      });
+
+      /* ═══════════════════════════════════════
+         SCREEN NAVIGATION
+      ═══════════════════════════════════════ */
+      function showScreen(id) {
+        Object.values(screens).forEach(s => s.classList.remove('active'));
+        const target = screens[id] || document.getElementById(id);
+        if (target) {
+          target.classList.add('active');
+          state.currentScreen = id;
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }
+
+      /* ═══════════════════════════════════════
+         TOAST NOTIFICATIONS
+      ═══════════════════════════════════════ */
+      function showToast(type, title, msg, duration = 5000) {
+        const container = $('#toast-container');
+        const icons = { error: '⚠️', warning: '⚡', success: '✅' };
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `
+          <span class="toast-icon">${icons[type] || ''}</span>
+          <div class="toast-body">
+            <div class="toast-title">${title}</div>
+            <div class="toast-msg">${msg}</div>
+          </div>
+        `;
+        container.appendChild(toast);
+        setTimeout(() => {
+          toast.classList.add('fade-out');
+          setTimeout(() => toast.remove(), 300);
+        }, duration);
+      }
+
+      /* ═══════════════════════════════════════
+         MARKED.JS CONFIG
+      ═══════════════════════════════════════ */
+      function configureMarked() {
+        const renderer = new marked.Renderer();
+
+        const origHeading = renderer.heading;
+        renderer.heading = function({ text, depth }) {
+          const level = depth === 1 ? 2 : depth;
+          return `<h${level}>${text}</h${level}>`;
+        };
+
+        marked.setOptions({
+          renderer,
+          breaks: true,
+          gfm: true,
+        });
+      }
+      configureMarked();
+
+      function renderMarkdown(md) {
+        let html = marked.parse(md || '');
+
+        // Signal badges
+        html = html.replace(/✅\s*([^<\n]+)/g, '<span class="signal-badge signal-green">✅ $1</span>');
+        html = html.replace(/⚠️?\s*([^<\n]+)/g, '<span class="signal-badge signal-amber">⚠ $1</span>');
+        html = html.replace(/❌\s*([^<\n]+)/g, '<span class="signal-badge signal-red">❌ $1</span>');
+        html = html.replace(/🔍\s*([^<\n]+)/g, '<span class="signal-badge signal-blue">🔍 $1</span>');
+
+        // Severity cards
+        html = html.replace(/<p>🚨\s*CRITICAL[:\s]*(.*?)<\/p>/gi, '<div class="severity-card critical"><p>🚨 CRITICAL: $1</p></div>');
+        html = html.replace(/<p>🔴\s*HIGH[:\s]*(.*?)<\/p>/gi, '<div class="severity-card high"><p>🔴 HIGH: $1</p></div>');
+        html = html.replace(/<p>🟡\s*MEDIUM[:\s]*(.*?)<\/p>/gi, '<div class="severity-card medium"><p>🟡 MEDIUM: $1</p></div>');
+
+        // Investment signal glow
+        html = html.replace(/\bGO\s*🟢/g, '<span class="signal-glow-go">GO 🟢</span>');
+        html = html.replace(/\bHOLD\s*🟡/g, '<span class="signal-glow-hold">HOLD 🟡</span>');
+        html = html.replace(/\bPASS\s*🔴/g, '<span class="signal-glow-pass">PASS 🔴</span>');
+
+        return html;
+      }
+
+      /* ═══════════════════════════════════════
+         SYSTEM PROMPT
+      ═══════════════════════════════════════ */
+      const SYSTEM_PROMPT = `You are a senior investment analyst at a top-tier venture capital firm with 10 years of experience evaluating early and growth-stage startups. You have reviewed 3,000+ pitch decks and led due diligence on 200+ companies across deep tech, AI, SaaS, healthtech, climate, and consumer verticals.
+
+OPERATING RULES:
+1. Execute your assigned phase completely. Do not summarise or skip sections.
+2. Never hallucinate data. Every factual claim is either sourced from provided materials, your training knowledge, or explicitly marked [UNVERIFIED / ESTIMATED].
+3. Apply VC-grade skepticism. Default assumption: all founder-stated metrics carry optimistic bias. Treat percentage impact claims (e.g. "90% digital transformation", "80% workflow automation") as unverifiable unless a named customer, methodology document, and audit trail are cited.
+4. Be forensically specific. No generic filler. Every section must be specific to THIS company, THIS vertical, THIS team.
+5. Format with clear markdown headers, tables where appropriate.
+6. Confidence ratings on all assertions: HIGH / MEDIUM / LOW.
+7. Signal notation: ✅ VERIFIED | ⚠ PARTIAL/MISLEADING | ❌ CONTRADICTED | 🔍 REQUIRES INVESTIGATION | ⚪ UNVERIFIABLE
+8. For regulatory claims: identify the SPECIFIC regulatory body, the SPECIFIC certification or registration required, and whether the company's claim accurately describes what it holds vs. what it implies.
+9. For traction metrics: if counters are JavaScript-animated and no static value appears in page source, press, or third-party databases, treat actual values as undisclosed and flag accordingly.
+10. For advisory/team claims: unnamed advisors with no public profile are unverifiable by definition — flag, do not accept at face value.
+11. Competitor analysis must include funding amounts, regulatory clearance status, and dated milestones — not just names.
+12. Every output section must include actionable verification tests: exactly what to ask, what database to check, what document to request.`;
+
+      /* ═══════════════════════════════════════
+         PHASE PROMPTS
+      ═══════════════════════════════════════ */
+      function phase1Msg(cfg) {
+        return `=== PHASE 1: PRE-CALL INTELLIGENCE BRIEF ===
+PRIVATE & CONFIDENTIAL
+
+STARTUP: ${cfg.startup}
+VERTICAL: ${cfg.vertical || "Determine from research"}
+STAGE: ${cfg.stage} | CHECK SIZE: ${cfg.checkSize || "Not specified"}
+FUND THESIS: ${cfg.thesis || "General VC"}
+CALL DURATION: ${cfg.callTime}
+MATERIALS PROVIDED: ${cfg.materials || "None — perform cold-start research from company name"}
+KNOWN CONCERNS: ${cfg.flags || "None pre-identified"}
+
+Produce a structured pre-call intelligence brief. This is read 10 minutes before a founder meeting.
+
+───────────────────────────────────
+QUICK TAKE (3–4 sentences max)
+───────────────────────────────────
+One-paragraph synthesis: what the company is, the market, why it matters now, and the single biggest open question.
+
+───────────────────────────────────
+1. COMPANY SNAPSHOT
+───────────────────────────────────
+- Full legal name, incorporation year, HQ city
+- One-sentence description
+- Funding history: all rounds with amounts, lead investors, dates, and source
+- Team size. Key hires.
+- Website, Crunchbase, notable press.
+
+───────────────────────────────────
+2. PROBLEM & MARKET OPPORTUNITY
+───────────────────────────────────
+Table: | Problem | Industry Context (with data) | Company's Angle |
+Market sizing (independently sourced): TAM, SAM, SOM with analyst source and date. CAGR. Geographic breakdown. Key demand drivers.
+
+───────────────────────────────────
+3. PRODUCT SUITE
+───────────────────────────────────
+Table: | Product/Service | Description | Target Buyer | Status |
+Status = Live / Beta / Roadmap / Unverified
+
+───────────────────────────────────
+4. STATED TRACTION & IMPACT CLAIMS
+───────────────────────────────────
+Table: | Claim | Stated Value | VC Lens | Verification Priority |
+
+───────────────────────────────────
+5. TEAM ASSESSMENT
+───────────────────────────────────
+Table: | Name | Role | Background | Open-Source Status | Flags |
+
+───────────────────────────────────
+6. COMPETITIVE LANDSCAPE
+───────────────────────────────────
+Table: | Competitor | HQ | Total Funding | Regulatory Status | Key Milestone (date) | Threat Level |
+
+───────────────────────────────────
+7. PRE-CALL TALKING POINTS
+───────────────────────────────────
+10 questions. Each with:
+**Q:** [Question]
+**Tests:** [What it probes]
+**Red Flag Answer:** [Concerning response]`;
+      }
+
+      function phase2Msg(cfg, p1) {
+        return `=== PHASE 2: RED TEAM DUE DILIGENCE ===
+PRIVATE & CONFIDENTIAL
+
+STARTUP: ${cfg.startup}
+VERTICAL: ${cfg.vertical || "Determine from research"}
+STAGE: ${cfg.stage} | CHECK SIZE: ${cfg.checkSize || "Not specified"}
+FUND THESIS: ${cfg.thesis || "General VC"}
+KNOWN CONCERNS: ${cfg.flags || "None pre-identified"}
+
+───────────────────────────────────
+PHASE 1 OUTPUT (CONTEXT):
+───────────────────────────────────
+${p1}
+
+───────────────────────────────────
+YOUR TASK:
+───────────────────────────────────
+You are now operating as the RED TEAM. Your sole objective is to find every weakness, inconsistency, unverifiable claim, and potential deception in the company's narrative.
+
+Produce the following sections:
+
+───────────────────────────────────
+HEADER SCOREBOARD
+───────────────────────────────────
+Summary dashboard: Claims Tested | Verified | Partially Verified | Contradicted | Unverifiable
+Format as a single-row table.
+
+───────────────────────────────────
+METHODOLOGY NOTE
+───────────────────────────────────
+Brief description of red team approach used.
+
+───────────────────────────────────
+HEADLINE CLAIMS FORENSIC DECONSTRUCTION
+───────────────────────────────────
+For each major claim made by the company or found in Phase 1, provide:
+- The claim (quoted)
+- Severity rating: 🚨 CRITICAL / 🔴 HIGH / 🟡 MEDIUM / ⚪ LOW
+- Evidence for
+- Evidence against
+- Verdict: ✅ / ⚠ / ❌ / 🔍 / ⚪
+- Verification test (specific action to confirm/deny)
+
+───────────────────────────────────
+ADVERSARIAL ANALYSIS BY DOMAIN
+───────────────────────────────────
+Cover each domain in detail:
+1. **Market Size Attack** — Are TAM/SAM/SOM numbers real or inflated? Source cross-check.
+2. **Traction Attack** — Are metrics verifiable? Growth rate sustainability. Customer quality.
+3. **Team Credential Attack** — LinkedIn verification. Employment gaps. Credential inflation.
+4. **Technology/IP Attack** — Is the tech differentiated? Defensibility assessment. Patent status.
+5. **Regulatory/Compliance Attack** — Actual vs. claimed regulatory status. Compliance gaps.
+6. **Business Model Attack** — Unit economics scrutiny. Margin sustainability. Revenue quality.
+7. **Product Breadth/PMF Attack** — Is there real PMF or vanity traction? Feature vs. product.
+8. **Fraud Indicators** — Red flags for misrepresentation. Unusual patterns.
+
+───────────────────────────────────
+RISK MATRIX
+───────────────────────────────────
+Table: | Risk | Category | Likelihood (1-5) | Impact (1-5) | L×I Score | Mitigation |
+Sort by L×I score descending.
+
+───────────────────────────────────
+MINIMUM VERIFICATION GATE
+───────────────────────────────────
+5 items that MUST be verified before any investment proceeds. For each:
+- What to verify
+- How to verify (specific method)
+- Who to ask
+- Expected timeline
+- Deal-breaker if failed? (Y/N)`;
+      }
+
+      function phase3Msg(cfg, p1, p2) {
+        return `=== PHASE 3: INDEPENDENT VERIFICATION ===
+PRIVATE & CONFIDENTIAL
+
+STARTUP: ${cfg.startup}
+VERTICAL: ${cfg.vertical || "Determine from research"}
+STAGE: ${cfg.stage} | CHECK SIZE: ${cfg.checkSize || "Not specified"}
+FUND THESIS: ${cfg.thesis || "General VC"}
+
+───────────────────────────────────
+PHASE 1 OUTPUT (CONTEXT):
+───────────────────────────────────
+${p1}
+
+───────────────────────────────────
+PHASE 2 OUTPUT (CONTEXT):
+───────────────────────────────────
+${p2}
+
+───────────────────────────────────
+YOUR TASK:
+───────────────────────────────────
+You are now the INDEPENDENT VERIFICATION unit. Your job is to corroborate or contradict the claims using independent sources, open data, and logical inference. You are not an advocate for or against the company.
+
+Produce the following sections:
+
+───────────────────────────────────
+HEADER SCOREBOARD
+───────────────────────────────────
+Table: | CONFIRMED ✅ | PARTIALLY CONFIRMED ⚠ | DIRECTLY CONTRADICTED ❌ | UNVERIFIABLE ⚪ |
+With counts for each category.
+
+───────────────────────────────────
+METHODOLOGY NOTE
+───────────────────────────────────
+Sources used, verification approach, and limitations.
+
+───────────────────────────────────
+COMPANY IDENTITY VERIFICATION
+───────────────────────────────────
+Table: | Data Point | Claimed | Verified Value | Source | Status |
+Cover: Legal name, incorporation, HQ, registration numbers, domain age, team LinkedIn.
+
+───────────────────────────────────
+CONFIRMED CLAIMS ✅
+───────────────────────────────────
+Each confirmed claim with source citation and confidence level.
+
+───────────────────────────────────
+PARTIALLY CONFIRMED CLAIMS ⚠
+───────────────────────────────────
+Claims that are partially true but with caveats. Explain the gap.
+
+───────────────────────────────────
+DIRECTLY CONTRADICTED CLAIMS ❌
+───────────────────────────────────
+Claims that are demonstrably false or seriously misleading. Provide counter-evidence.
+
+───────────────────────────────────
+UNVERIFIABLE CLAIMS ⚪
+───────────────────────────────────
+Claims that cannot be confirmed or denied with available data. Explain why.
+
+───────────────────────────────────
+INDEPENDENT MARKET INTELLIGENCE
+───────────────────────────────────
+Your own research findings on:
+1. **Market Size** — Independent TAM/SAM/SOM estimates from analyst reports
+2. **Regulatory Landscape** — Current regulations, pending legislation, enforcement trends
+3. **Competitive Activity** — Recent funding rounds, product launches, partnerships by competitors
+4. **Macro Trends** — Industry tailwinds and headwinds
+5. **Notable Failures** — Companies in this space that failed and why
+
+───────────────────────────────────
+REGULATORY RISK ASSESSMENT
+───────────────────────────────────
+Table: | Regulation | Body | Requirement | Company Status | Risk Level | Timeline |
+
+───────────────────────────────────
+VERIFICATION SCORECARD
+───────────────────────────────────
+Table: | Category | Score (1-10) | Key Finding | Confidence |
+Categories: Team, Market, Product, Traction, Regulatory, Financial
+
+───────────────────────────────────
+FINAL VERDICT
+───────────────────────────────────
+2-3 paragraph synthesis of verification findings. Net assessment of the company's honesty and accuracy in its representations. Key areas where founder claims diverge from independent evidence.`;
+      }
+
+      function phase4Msg(cfg, p1, p2, p3) {
+        return `=== PHASE 4: FINAL INVESTMENT PACKET ===
+PRIVATE & CONFIDENTIAL
+
+STARTUP: ${cfg.startup}
+VERTICAL: ${cfg.vertical || "Determine from research"}
+STAGE: ${cfg.stage} | CHECK SIZE: ${cfg.checkSize || "Not specified"}
+FUND THESIS: ${cfg.thesis || "General VC"}
+CALL DURATION: ${cfg.callTime}
+
+───────────────────────────────────
+PHASE 1 OUTPUT (CONTEXT):
+───────────────────────────────────
+${p1}
+
+───────────────────────────────────
+PHASE 2 OUTPUT (CONTEXT):
+───────────────────────────────────
+${p2}
+
+───────────────────────────────────
+PHASE 3 OUTPUT (CONTEXT):
+───────────────────────────────────
+${p3}
+
+───────────────────────────────────
+YOUR TASK:
+───────────────────────────────────
+Synthesize all three phases into a final investment decision packet. This is the document the investment committee reads.
+
+Produce the following sections:
+
+───────────────────────────────────
+EXECUTIVE BRIEF
+───────────────────────────────────
+3-4 paragraph executive summary covering: what the company does, market opportunity, key strengths, key risks, and recommended action. This should be readable in 2 minutes by a GP.
+
+───────────────────────────────────
+DUE DILIGENCE SUMMARY
+───────────────────────────────────
+
+**Verified Strengths:**
+Bulleted list of what has been confirmed as genuine strengths.
+
+**Areas Requiring Further Diligence:**
+Bulleted list of open items that need more investigation before a decision.
+
+**Red Flags:**
+Bulleted list of confirmed or suspected problems, ordered by severity.
+
+───────────────────────────────────
+MARKET INTELLIGENCE SUMMARY
+───────────────────────────────────
+Consolidated market view: size, growth, competitive dynamics, regulatory environment, timing assessment.
+
+───────────────────────────────────
+RECOMMENDED CALL QUESTIONS
+───────────────────────────────────
+8 questions for the founder call. Each with:
+**Q:** [Question]
+**Tests:** [What this probes]
+**Red Flag Answer:** [Answer that should concern you]
+**Green Flag Answer:** [Answer that builds conviction]
+
+These should be informed by the red team and verification findings — not generic.
+
+───────────────────────────────────
+TERM SHEET CONSIDERATIONS
+───────────────────────────────────
+If proceeding, recommended:
+- Valuation range and rationale
+- Key protective provisions
+- Information rights to require
+- Milestones to gate follow-on
+- Co-investor preferences
+
+───────────────────────────────────
+INVESTMENT SIGNAL
+───────────────────────────────────
+**Signal:** GO 🟢 / HOLD 🟡 / PASS 🔴
+**Conviction Score:** X/10
+**Narrative Integrity Score:** X/100
+
+Explain the signal in 2-3 sentences. What would change the signal?
+
+If HOLD: specify exactly what information would move this to GO or PASS.
+If PASS: specify what would need to change for reconsideration.`;
+      }
+
+      /* ═══════════════════════════════════════
+         LLM CALL (STREAMING)
+      ═══════════════════════════════════════ */
+      async function* callLLM(systemPrompt, userMessage, honeypot = '') {
+        const controller = new AbortController();
+        state.abortController = controller;
+
+        const res = await fetch('/api/research', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ systemPrompt, userMessage, honeypot }),
+          signal: controller.signal,
+        });
+
+        if (!res.ok) {
+          let errMsg = 'Research failed. Please try again.';
+          try {
+            const err = await res.json();
+            errMsg = err.error || errMsg;
+          } catch {}
+
+          if (res.status === 429) {
+            throw new Error('QUOTA_EXCEEDED: API rate limit reached. Please wait a moment and try again.');
+          }
+          if (res.status === 500) {
+            throw new Error('SERVICE_UNAVAILABLE: Research service temporarily unavailable. Please try again later.');
+          }
+          throw new Error(errMsg);
+        }
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+
+          const lines = buffer.split('\n');
+          buffer = lines.pop();
+
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue;
+            const data = line.slice(6).trim();
+            if (data === '[DONE]') return;
+            try {
+              const json = JSON.parse(data);
+              const chunk = json.choices?.[0]?.delta?.content;
+              if (chunk) yield chunk;
+            } catch {}
+          }
+        }
+      }
+
+      /* ═══════════════════════════════════════
+         PHASE EXECUTION
+      ═══════════════════════════════════════ */
+      function setPhaseState(phaseNum, phaseState) {
+        const circle = $(`#phase-circle-${phaseNum}`);
+        const badge = $(`#phase-badge-${phaseNum}`);
+        const connector = $(`#phase-connector-${phaseNum}`);
+
+        circle.className = `phase-circle ${phaseState}`;
+        badge.className = `phase-badge ${phaseState}`;
+
+        // SVG inside circle
+        if (phaseState === 'done') {
+          circle.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+          if (connector) connector.classList.add('done');
+        } else if (phaseState === 'error') {
+          circle.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+        } else {
+          circle.innerHTML = '';
+        }
+
+        const labels = { pending: 'Pending', running: 'Running…', done: 'Complete', error: 'Error' };
+        badge.textContent = labels[phaseState] || '';
+      }
+
+      function updateProgressBar(phase, partialProgress = 0) {
+        const fill = $('#progress-bar-fill');
+        const completedPct = (phase - 1) * 25;
+        const currentPct = Math.min(partialProgress * 25, 25);
+        fill.style.width = `${completedPct + currentPct}%`;
+      }
+
+      async function runPhase(phaseNum, cfg) {
+        const previewHeader = $('#live-preview-header');
+        const previewContent = $('#live-preview-content');
+        const warningEl = $('#progress-warning');
+
+        previewHeader.textContent = `Live output — Phase ${phaseNum}`;
+        previewContent.textContent = '';
+        setPhaseState(phaseNum, 'running');
+        updateProgressBar(phaseNum, 0);
+
+        // Timeout warning
+        let warningTimer = setTimeout(() => {
+          warningEl.style.display = 'block';
+          warningEl.textContent = 'This phase is taking longer than usual. Still working…';
+        }, 90000);
+
+        let userMessage;
+        switch (phaseNum) {
+          case 1: userMessage = phase1Msg(cfg); break;
+          case 2: userMessage = phase2Msg(cfg, state.phaseOutputs[0]); break;
+          case 3: userMessage = phase3Msg(cfg, state.phaseOutputs[0], state.phaseOutputs[1]); break;
+          case 4: userMessage = phase4Msg(cfg, state.phaseOutputs[0], state.phaseOutputs[1], state.phaseOutputs[2]); break;
+        }
+
+        let output = '';
+        let charCount = 0;
+
+        try {
+          for await (const chunk of callLLM(SYSTEM_PROMPT, userMessage, cfg.honeypot)) {
+            output += chunk;
+            charCount += chunk.length;
+            previewContent.textContent += chunk;
+
+            // Auto-scroll
+            previewContent.scrollTop = previewContent.scrollHeight;
+
+            // Update progress estimate based on char count
+            const estimatedProgress = Math.min(charCount / 4000, 0.95);
+            updateProgressBar(phaseNum, estimatedProgress);
+          }
+
+          clearTimeout(warningTimer);
+          warningEl.style.display = 'none';
+
+          state.phaseOutputs[phaseNum - 1] = output;
+          state.phasesCompleted[phaseNum - 1] = true;
+          setPhaseState(phaseNum, 'done');
+          updateProgressBar(phaseNum + 1, 0);
+
+          return true;
+        } catch (err) {
+          clearTimeout(warningTimer);
+          warningEl.style.display = 'none';
+
+          // Save partial output if any
+          if (output.length > 0) {
+            state.phaseOutputs[phaseNum - 1] = output;
+          }
+          state.phaseErrors[phaseNum - 1] = true;
+          setPhaseState(phaseNum, 'error');
+
+          throw err;
+        }
+      }
+
+      async function runAllPhases(cfg, startFrom = 1) {
+        showScreen('progress');
+
+        // Reset phases from startFrom onward
+        for (let i = startFrom; i <= 4; i++) {
+          if (!state.phasesCompleted[i - 1]) {
+            setPhaseState(i, 'pending');
+            state.phaseErrors[i - 1] = false;
+          }
+        }
+
+        const errorOverlay = $('#progress-error');
+        errorOverlay.style.display = 'none';
+
+        const footerEl = $('#progress-footer');
+        footerEl.style.display = 'block';
+
+        try {
+          for (let i = startFrom; i <= 4; i++) {
+            if (state.phasesCompleted[i - 1]) continue;
+            await runPhase(i, cfg);
+          }
+
+          // All done — show results
+          showResults();
+        } catch (err) {
+          const msg = err.message || 'Unknown error';
+          const failedPhase = state.phasesCompleted.findIndex(c => !c) + 1;
+
+          footerEl.style.display = 'none';
+
+          if (msg.startsWith('QUOTA_EXCEEDED')) {
+            errorOverlay.style.display = 'block';
+            $('#error-title').textContent = 'Rate Limit Reached';
+            $('#error-message').textContent = 'The API quota has been exceeded. Please wait a moment before trying again.';
+            $('#btn-retry-phase').style.display = 'none';
+            $('#btn-start-over').textContent = 'Start Over';
+          } else if (msg.startsWith('SERVICE_UNAVAILABLE')) {
+            errorOverlay.style.display = 'block';
+            $('#error-title').textContent = 'Service Unavailable';
+            $('#error-message').textContent = 'Research service temporarily unavailable. Please try again later.';
+            $('#btn-retry-phase').style.display = 'inline-block';
+            $('#retry-phase-num').textContent = failedPhase;
+          } else if (err.name === 'AbortError') {
+            // User cancelled, do nothing
+            return;
+          } else {
+            errorOverlay.style.display = 'block';
+            $('#error-title').textContent = 'Research Error';
+            $('#error-message').textContent = msg;
+            $('#btn-retry-phase').style.display = 'inline-block';
+            $('#retry-phase-num').textContent = failedPhase;
+
+            showToast('error', 'Phase failed', `Error during Phase ${failedPhase}. Completed phases are preserved.`);
+          }
+
+          // If any phases completed, allow partial download
+          if (state.phasesCompleted.some(c => c)) {
+            showToast('warning', 'Partial results available', 'Some phases completed successfully. You can view and download partial results.');
+            // Add a view partial results button
+            const partialBtn = document.createElement('button');
+            partialBtn.className = 'btn-retry';
+            partialBtn.textContent = 'View Partial Results';
+            partialBtn.style.marginTop = '12px';
+            partialBtn.addEventListener('click', () => showResults());
+            if (!errorOverlay.querySelector('.btn-partial')) {
+              partialBtn.classList.add('btn-partial');
+              errorOverlay.appendChild(partialBtn);
+            }
+          }
+        }
+      }
+
+      /* ═══════════════════════════════════════
+         SHOW RESULTS
+      ═══════════════════════════════════════ */
+      function showResults() {
+        const company = state.companyName;
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        const completedCount = state.phasesCompleted.filter(Boolean).length;
+
+        $('#success-title').textContent = `Research Complete — ${company}`;
+        $('#success-meta').textContent = `${dateStr} · ${completedCount} phase${completedCount !== 1 ? 's' : ''} completed · ~15 min read`;
+
+        // Render phase outputs into tabs
+        const tabIds = ['tab-brief', 'tab-redteam', 'tab-verification', 'tab-packet'];
+        tabIds.forEach((id, i) => {
+          const panel = $(`#${id}`);
+          if (state.phasesCompleted[i] && state.phaseOutputs[i]) {
+            panel.innerHTML = renderMarkdown(state.phaseOutputs[i]);
+          } else if (state.phaseErrors[i]) {
+            panel.innerHTML = `<div class="error-overlay"><h3>Phase ${i + 1} — Error</h3><p>This phase encountered an error and could not complete.</p></div>`;
+          } else {
+            panel.innerHTML = `<div class="error-overlay"><h3>Phase ${i + 1} — Not Started</h3><p>This phase was not executed.</p></div>`;
+          }
+        });
+
+        // Reset tabs to first
+        $$('.tab-item').forEach(t => t.classList.remove('active'));
+        $$('.tab-panel').forEach(p => p.classList.remove('active'));
+        $('#tab-btn-brief').classList.add('active');
+        $('#tab-brief').classList.add('active');
+
+        state.resultArrivalTime = Date.now();
+        showScreen('results');
+
+        // Rating timer (45s or on download)
+        if (!state.ratingShown) {
+          setTimeout(() => {
+            if (!state.ratingShown && state.currentScreen === 'results') {
+              showRatingWidget();
+            }
+          }, 45000);
+        }
+      }
+
+      /* ═══════════════════════════════════════
+         TABS
+      ═══════════════════════════════════════ */
+      $$('.tab-item').forEach(tab => {
+        tab.addEventListener('click', () => {
+          $$('.tab-item').forEach(t => t.classList.remove('active'));
+          $$('.tab-panel').forEach(p => p.classList.remove('active'));
+          tab.classList.add('active');
+          const panelId = tab.getAttribute('data-tab');
+          $(`#${panelId}`).classList.add('active');
+        });
+      });
+
+      /* ═══════════════════════════════════════
+         FORM SUBMISSION
+      ═══════════════════════════════════════ */
+      const form = $('#research-form');
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        // Honeypot check
+        const honeypotVal = $('#input-honeypot').value;
+        if (honeypotVal) {
+          showToast('error', 'Submission blocked', 'Invalid form submission detected.');
+          return;
+        }
+
+        // Validate startup name
+        const startup = $('#input-startup').value.trim();
+        if (!startup) {
+          $('#input-startup').classList.add('error');
+          $('#error-startup').classList.add('visible');
+          $('#input-startup').focus();
+          return;
+        }
+        $('#input-startup').classList.remove('error');
+        $('#error-startup').classList.remove('visible');
+
+        // Gather config
+        const cfg = {
+          startup,
+          vertical: $('#input-vertical').value.trim(),
+          stage: $('#input-stage').value,
+          checkSize: $('#input-check-size').value.trim(),
+          thesis: $('#input-thesis').value.trim(),
+          callTime: $('#input-call-time').value,
+          materials: $('#input-materials').value.trim(),
+          flags: $('#input-flags').value.trim(),
+          honeypot: honeypotVal,
+        };
+
+        state.config = cfg;
+        state.companyName = startup;
+        state.phaseOutputs = ['', '', '', ''];
+        state.phasesCompleted = [false, false, false, false];
+        state.phaseErrors = [false, false, false, false];
+        state.hasDownloaded = false;
+        state.ratingShown = false;
+        state.selectedStars = 0;
+
+        // Reset rating widget
+        const ratingWidget = $('#rating-widget');
+        ratingWidget.classList.remove('visible');
+        $$('.rating-star').forEach(s => s.classList.remove('filled'));
+        $('#rating-comment').value = '';
+        $('#rating-submit').disabled = true;
+        $('#rating-thanks').style.display = 'none';
+
+        // Update progress heading
+        $('#progress-heading').textContent = `Researching ${startup}`;
+
+        // Reset stepper
+        for (let i = 1; i <= 4; i++) {
+          setPhaseState(i, 'pending');
+          const connector = $(`#phase-connector-${i}`);
+          if (connector) connector.classList.remove('done');
+        }
+        $('#progress-bar-fill').style.width = '0%';
+        $('#live-preview-content').textContent = '';
+        $('#live-preview-header').textContent = 'Live output — Phase 1';
+        $('#progress-warning').style.display = 'none';
+
+        // Remove old partial results button if any
+        const partialBtn = $('#progress-error .btn-partial');
+        if (partialBtn) partialBtn.remove();
+
+        runAllPhases(cfg);
+      });
+
+      // Clear error on input
+      $('#input-startup').addEventListener('input', () => {
+        $('#input-startup').classList.remove('error');
+        $('#error-startup').classList.remove('visible');
+      });
+
+      /* ═══════════════════════════════════════
+         RETRY & START OVER
+      ═══════════════════════════════════════ */
+      $('#btn-retry-phase').addEventListener('click', () => {
+        const failedPhase = state.phasesCompleted.findIndex(c => !c) + 1;
+        state.phaseErrors[failedPhase - 1] = false;
+        runAllPhases(state.config, failedPhase);
+      });
+
+      $('#btn-start-over').addEventListener('click', () => {
+        if (state.abortController) {
+          state.abortController.abort();
+          state.abortController = null;
+        }
+        showScreen('input');
+      });
+
+      /* ═══════════════════════════════════════
+         NEW RESEARCH
+      ═══════════════════════════════════════ */
+      $('#btn-new-research').addEventListener('click', () => {
+        form.reset();
+        showScreen('input');
+      });
+
+      /* ═══════════════════════════════════════
+         PDF GENERATION
+      ═══════════════════════════════════════ */
+      function buildPdfHtml() {
+        const company = state.companyName;
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        const cfg = state.config;
+
+        const phaseNames = [
+          'Phase 1: Pre-Call Intelligence Brief',
+          'Phase 2: Red Team Due Diligence',
+          'Phase 3: Independent Verification',
+          'Phase 4: Final Investment Packet',
+        ];
+
+        const phaseColors = ['phase-1', 'phase-2', 'phase-3', 'phase-4'];
+
+        let html = `
+          <div class="pdf-page">
+            <div class="pdf-stamp">PRIVATE &amp; CONFIDENTIAL</div>
+            <div class="pdf-company-name">${escapeHtml(company)}</div>
+            <div class="pdf-subtitle">Investor Intelligence Packet</div>
+            <hr>
+            <table class="pdf-meta-table">
+              <tr><td>Date Generated</td><td>${dateStr}</td></tr>
+              <tr><td>Investment Stage</td><td>${escapeHtml(cfg.stage)}</td></tr>
+              <tr><td>Fund Thesis</td><td>${escapeHtml(cfg.thesis || 'General VC')}</td></tr>
+              <tr><td>Call Duration</td><td>${escapeHtml(cfg.callTime)}</td></tr>
+              ${cfg.checkSize ? `<tr><td>Check Size</td><td>${escapeHtml(cfg.checkSize)}</td></tr>` : ''}
+            </table>
+            <div class="pdf-toc">
+              <h3>Table of Contents</h3>
+              <ol>
+                ${phaseNames.map(n => `<li>${n}</li>`).join('')}
+              </ol>
+            </div>
+            <div class="pdf-footer">Generated by VC Intelligence Tool</div>
+          </div>
+        `;
+
+        // Phase sections
+        for (let i = 0; i < 4; i++) {
+          if (state.phasesCompleted[i] && state.phaseOutputs[i]) {
+            const renderedContent = marked.parse(state.phaseOutputs[i]);
+            html += `
+              <div class="pdf-page">
+                <div class="pdf-phase-header ${phaseColors[i]}">${phaseNames[i]}</div>
+                <div class="pdf-content">${renderedContent}</div>
+              </div>
+            `;
+          }
+        }
+
+        return html;
+      }
+
+      function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+      }
+
+      async function generatePdf() {
+        const btn = $('#btn-download-pdf');
+        btn.classList.add('loading');
+        btn.disabled = true;
+
+        try {
+          const renderZone = $('#pdf-render-zone');
+          renderZone.innerHTML = buildPdfHtml();
+
+          // Wait for rendering
+          await new Promise(r => setTimeout(r, 500));
+
+          const { jsPDF } = window.jspdf;
+          const pdf = new jsPDF('p', 'mm', 'a4');
+          const pdfWidth = 210;
+          const pdfHeight = 297;
+          const pages = renderZone.querySelectorAll('.pdf-page');
+
+          for (let i = 0; i < pages.length; i++) {
+            if (i > 0) pdf.addPage();
+
+            const canvas = await html2canvas(pages[i], {
+              scale: 2,
+              useCORS: true,
+              backgroundColor: '#ffffff',
+              width: 794,
+              windowWidth: 794,
+            });
+
+            const imgData = canvas.toDataURL('image/jpeg', 0.95);
+            const imgWidth = pdfWidth;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+            // If content is taller than one page, we need to paginate
+            let heightLeft = imgHeight;
+            let position = 0;
+
+            pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pdfHeight;
+
+            while (heightLeft > 0) {
+              position -= pdfHeight;
+              pdf.addPage();
+              pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+              heightLeft -= pdfHeight;
+            }
+          }
+
+          const dateStr = new Date().toISOString().slice(0, 10);
+          const safeName = state.companyName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/, '');
+          pdf.save(`${safeName}-vc-intel-${dateStr}.pdf`);
+
+          btn.classList.remove('loading');
+          btn.classList.add('success');
+
+          state.hasDownloaded = true;
+          if (!state.ratingShown) showRatingWidget();
+
+          setTimeout(() => {
+            btn.classList.remove('success');
+            btn.disabled = false;
+          }, 3000);
+
+        } catch (err) {
+          btn.classList.remove('loading');
+          btn.disabled = false;
+          showToast('error', 'PDF Error', 'Failed to generate PDF. Please try again.');
+          console.error('PDF generation error:', err);
+        }
+      }
+
+      $('#btn-download-pdf').addEventListener('click', generatePdf);
+
+      /* ═══════════════════════════════════════
+         MD DOWNLOAD
+      ═══════════════════════════════════════ */
+      function downloadMd() {
+        const phaseNames = [
+          '# Phase 1: Pre-Call Intelligence Brief',
+          '# Phase 2: Red Team Due Diligence',
+          '# Phase 3: Independent Verification',
+          '# Phase 4: Final Investment Packet',
+        ];
+
+        let content = `# ${state.companyName} — Investor Intelligence Packet\n`;
+        content += `_Generated: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}_\n\n`;
+        content += `---\n\n`;
+
+        for (let i = 0; i < 4; i++) {
+          if (state.phasesCompleted[i] && state.phaseOutputs[i]) {
+            content += `${phaseNames[i]}\n\n`;
+            content += state.phaseOutputs[i];
+            content += '\n\n---\n\n';
+          }
+        }
+
+        const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const dateStr = new Date().toISOString().slice(0, 10);
+        const safeName = state.companyName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/, '');
+        a.href = url;
+        a.download = `${safeName}-vc-intel-${dateStr}.md`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        const btn = $('#btn-download-md');
+        btn.classList.add('success');
+        state.hasDownloaded = true;
+        if (!state.ratingShown) showRatingWidget();
+
+        setTimeout(() => {
+          btn.classList.remove('success');
+        }, 3000);
+      }
+
+      $('#btn-download-md').addEventListener('click', downloadMd);
+
+      /* ═══════════════════════════════════════
+         RATING WIDGET
+      ═══════════════════════════════════════ */
+      function showRatingWidget() {
+        if (state.ratingShown) return;
+        state.ratingShown = true;
+        const widget = $('#rating-widget');
+        widget.classList.add('visible');
+      }
+
+      // Star interactions
+      const starsContainer = $('#rating-stars');
+      const stars = $$('.rating-star');
+
+      starsContainer.addEventListener('mouseover', (e) => {
+        const star = e.target.closest('.rating-star');
+        if (!star) return;
+        const val = parseInt(star.getAttribute('data-star'));
+        stars.forEach(s => {
+          const sv = parseInt(s.getAttribute('data-star'));
+          s.classList.toggle('filled', sv <= val);
+        });
+      });
+
+      starsContainer.addEventListener('mouseout', () => {
+        stars.forEach(s => {
+          const sv = parseInt(s.getAttribute('data-star'));
+          s.classList.toggle('filled', sv <= state.selectedStars);
+        });
+      });
+
+      starsContainer.addEventListener('click', (e) => {
+        const star = e.target.closest('.rating-star');
+        if (!star) return;
+        state.selectedStars = parseInt(star.getAttribute('data-star'));
+        stars.forEach(s => {
+          const sv = parseInt(s.getAttribute('data-star'));
+          s.classList.toggle('filled', sv <= state.selectedStars);
+        });
+        $('#rating-submit').disabled = false;
+      });
+
+      // Submit rating
+      $('#rating-submit').addEventListener('click', () => {
+        const rating = {
+          stars: state.selectedStars,
+          comment: $('#rating-comment').value.trim(),
+          company: state.companyName,
+          date: new Date().toLocaleDateString('en-US'),
+          timestamp: Date.now(),
+        };
+
+        // Save to localStorage
+        const existing = JSON.parse(localStorage.getItem('vc-intel-ratings') || '[]');
+        existing.push(rating);
+        localStorage.setItem('vc-intel-ratings', JSON.stringify(existing));
+
+        // Show thanks
+        $('#rating-submit').style.display = 'none';
+        $('#rating-comment').style.display = 'none';
+        $('.rating-feedback-label').style.display = 'none';
+        starsContainer.style.pointerEvents = 'none';
+        $('#rating-thanks').style.display = 'block';
+
+        // Fade out after 2s
+        setTimeout(() => {
+          const widget = $('#rating-widget');
+          widget.style.animation = 'fadeOut 400ms ease forwards';
+          setTimeout(() => {
+            widget.classList.remove('visible');
+            widget.style.animation = '';
+          }, 400);
+        }, 2000);
+      });
+
+      /* ═══════════════════════════════════════
+         INITIALIZATION
+      ═══════════════════════════════════════ */
+      // Show the input screen by default
+      showScreen('input');
+    })();
+  </script>
+</body>
+</html>
