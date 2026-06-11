@@ -2427,7 +2427,7 @@ If proceeding:
           renderZone.innerHTML = buildPdfHtml();
 
           // Wait for rendering
-          await new Promise(r => setTimeout(r, 500));
+          await new Promise(r => setTimeout(r, 800));
 
           const { jsPDF } = window.jspdf;
           const pdf = new jsPDF('p', 'mm', 'a4');
@@ -2435,33 +2435,88 @@ If proceeding:
           const pdfHeight = 297;
           const pages = renderZone.querySelectorAll('.pdf-page');
 
+          // Max slice height in CSS pixels to stay within browser canvas limits
+          const MAX_SLICE_PX = 1400;
+          let isFirstPdfPage = true;
+
           for (let i = 0; i < pages.length; i++) {
-            if (i > 0) pdf.addPage();
+            const el = pages[i];
+            const totalHeight = el.scrollHeight;
+            const renderWidth = 794;
 
-            const canvas = await html2canvas(pages[i], {
-              scale: 2,
-              useCORS: true,
-              backgroundColor: '#ffffff',
-              width: 794,
-              windowWidth: 794,
-            });
+            // If the element is short enough, render it in one shot
+            if (totalHeight <= MAX_SLICE_PX) {
+              if (!isFirstPdfPage) pdf.addPage();
+              isFirstPdfPage = false;
 
-            const imgData = canvas.toDataURL('image/jpeg', 0.95);
-            const imgWidth = pdfWidth;
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+              try {
+                const canvas = await html2canvas(el, {
+                  scale: 1.5,
+                  useCORS: true,
+                  backgroundColor: '#ffffff',
+                  width: renderWidth,
+                  windowWidth: renderWidth,
+                });
 
-            // If content is taller than one page, we need to paginate
-            let heightLeft = imgHeight;
-            let position = 0;
+                const imgData = canvas.toDataURL('image/jpeg', 0.92);
+                const imgW = pdfWidth;
+                const imgH = (canvas.height * imgW) / canvas.width;
 
-            pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-            heightLeft -= pdfHeight;
+                let heightLeft = imgH;
+                let position = 0;
+                pdf.addImage(imgData, 'JPEG', 0, position, imgW, imgH);
+                heightLeft -= pdfHeight;
 
-            while (heightLeft > 0) {
-              position -= pdfHeight;
-              pdf.addPage();
-              pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-              heightLeft -= pdfHeight;
+                while (heightLeft > 0) {
+                  position -= pdfHeight;
+                  pdf.addPage();
+                  pdf.addImage(imgData, 'JPEG', 0, position, imgW, imgH);
+                  heightLeft -= pdfHeight;
+                }
+              } catch (pageErr) {
+                console.warn(`PDF: page ${i} render failed, skipping`, pageErr);
+              }
+            } else {
+              // Tall element — slice it into vertical strips
+              const numSlices = Math.ceil(totalHeight / MAX_SLICE_PX);
+
+              for (let s = 0; s < numSlices; s++) {
+                if (!isFirstPdfPage) pdf.addPage();
+                isFirstPdfPage = false;
+
+                const yOffset = s * MAX_SLICE_PX;
+                const sliceH = Math.min(MAX_SLICE_PX, totalHeight - yOffset);
+
+                try {
+                  const canvas = await html2canvas(el, {
+                    scale: 1.5,
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    width: renderWidth,
+                    windowWidth: renderWidth,
+                    height: sliceH,
+                    y: yOffset,
+                  });
+
+                  const imgData = canvas.toDataURL('image/jpeg', 0.92);
+                  const imgW = pdfWidth;
+                  const imgH = (canvas.height * imgW) / canvas.width;
+
+                  let heightLeft = imgH;
+                  let position = 0;
+                  pdf.addImage(imgData, 'JPEG', 0, position, imgW, imgH);
+                  heightLeft -= pdfHeight;
+
+                  while (heightLeft > 0) {
+                    position -= pdfHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'JPEG', 0, position, imgW, imgH);
+                    heightLeft -= pdfHeight;
+                  }
+                } catch (sliceErr) {
+                  console.warn(`PDF: page ${i} slice ${s} render failed, skipping`, sliceErr);
+                }
+              }
             }
           }
 
@@ -2483,7 +2538,7 @@ If proceeding:
         } catch (err) {
           btn.classList.remove('loading');
           btn.disabled = false;
-          showToast('error', 'PDF Error', 'Failed to generate PDF. Please try again.');
+          showToast('error', 'PDF Error', `Failed to generate PDF: ${err.message || 'Unknown error'}. Try downloading as Markdown instead.`);
           console.error('PDF generation error:', err);
         }
       }
